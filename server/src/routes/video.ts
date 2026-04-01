@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response as ExpressResponse } from 'express';
 import { Readable } from 'node:stream';
 
 function isLikelyHtml(contentType: string | null) {
@@ -32,7 +32,9 @@ function getSetCookieHeaders(headers: Headers): string[] {
   return single ? [single] : [];
 }
 
-async function fetchDriveFile(args: { fileId: string; range?: string; timeoutMs: number }) {
+type FetchResponse = globalThis.Response;
+
+async function fetchDriveFile(args: { fileId: string; range?: string; timeoutMs: number }): Promise<FetchResponse> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), args.timeoutMs);
   try {
@@ -49,7 +51,7 @@ async function fetchDriveFile(args: { fileId: string; range?: string; timeoutMs:
     };
     if (args.range) headers.Range = args.range;
 
-    let lastRes: Response | undefined;
+    let lastRes: FetchResponse | undefined;
     for (const baseUrl of candidateBaseUrls) {
       // First attempt (may return an HTML interstitial that requires a confirm token).
       let res = await fetch(baseUrl, {
@@ -91,7 +93,7 @@ async function fetchDriveFile(args: { fileId: string; range?: string; timeoutMs:
   }
 }
 
-export async function videoHandler(req: Request, res: Response) {
+export async function videoHandler(req: Request, res: ExpressResponse) {
   const fileId = process.env.VIDEO_DRIVE_FILE_ID?.trim();
   if (!fileId) {
     return res.status(501).json({

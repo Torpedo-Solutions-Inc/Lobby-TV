@@ -20,9 +20,13 @@ function announcementsToText(list: Announcement[]) {
   return parts.join('\n\n').trim();
 }
 
-function splitLinesPreserveBreaks(text: string) {
-  const normalized = text.replace(/\r\n/g, '\n');
-  return normalized.split('\n').map((l) => (l.length ? l : ' '));
+function splitAnnouncementsByBlankLine(text: string) {
+  const normalized = text.replace(/\r\n/g, '\n').trim();
+  if (!normalized) return [];
+  return normalized
+    .split(/\n[ \t]*\n+/g)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
 }
 
 export function AnnouncementsPanel({ rotationSeconds }: Props) {
@@ -53,20 +57,23 @@ export function AnnouncementsPanel({ rotationSeconds }: Props) {
   }, []);
 
   const text = useMemo(() => announcementsToText(announcements), [announcements]);
-  const lines = useMemo(() => (text ? splitLinesPreserveBreaks(text) : []), [text]);
+  const slots = useMemo(() => (text ? splitAnnouncementsByBlankLine(text) : []), [text]);
 
-  const tickerLines = useMemo(() => {
-    if (!lines.length) return [];
-    return [...lines, ...lines];
-  }, [lines]);
+  const tickerSlots = useMemo(() => {
+    if (!slots.length) return [];
+    return [...slots, ...slots];
+  }, [slots]);
 
   const durationSec = useMemo(() => {
-    const base = Math.max(1, lines.length);
+    const baseLineCount = Math.max(
+      1,
+      slots.reduce((acc, s) => acc + Math.max(1, s.split('\n').length), 0),
+    );
     const secondsPerLine = 2.4;
-    const target = base * secondsPerLine;
+    const target = baseLineCount * secondsPerLine;
     const min = Math.max(25, Math.round((rotationSeconds || 12) * 2));
     return Math.min(260, Math.max(min, Math.round(target)));
-  }, [lines.length, rotationSeconds]);
+  }, [rotationSeconds, slots]);
 
   return (
     <div className="card announcements">
@@ -75,10 +82,10 @@ export function AnnouncementsPanel({ rotationSeconds }: Props) {
       </div>
 
       <div className="announcementDoc">
-        {tickerLines.length ? (
+        {tickerSlots.length ? (
           <div className="vTicker" aria-label="announcements">
             <div className="vTickerTrack announcementsTrack" style={{ animationDuration: `${durationSec}s` }}>
-              {tickerLines.map((t, idx) => (
+              {tickerSlots.map((t, idx) => (
                 <div key={`${idx}-${t}`} className="vTickerItem announcementLine">
                   {t}
                 </div>
