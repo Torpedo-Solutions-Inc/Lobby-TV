@@ -2,9 +2,9 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
-import { newsHandler } from './routes/news';
-import { announcementsHandler } from './routes/announcements';
-import { videoHandler } from './routes/video';
+import { newsHandler } from './routes/news.js';
+import { announcementsHandler } from './routes/announcements.js';
+import { videoHandler } from './routes/video.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

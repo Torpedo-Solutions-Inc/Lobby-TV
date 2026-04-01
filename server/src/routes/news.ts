@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { fetchRss } from '../rss';
+import { fetchRss } from '../rss.js';
 
 const DEFAULT_RSS = 'https://www.ynet.co.il/Integration/StoryRss2.xml';
 
