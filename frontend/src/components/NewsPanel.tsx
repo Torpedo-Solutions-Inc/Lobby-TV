@@ -75,10 +75,8 @@ export function NewsPanel({ rssUrl, maxItems }: Props) {
   const headerSourceTimeText = useMemo(() => {
     const first = visible[0];
     if (!first) return null;
-    const source = first.source?.trim();
-    const published = formatPublished(first.publishedAt);
-    if (!source && !published) return null;
-    return `${source ? `${source} - ` : ''}חדשות${published ? ` · ${published}` : ''}`;
+    const source = first.source?.trim() || 'ynet';
+    return source;
   }, [visible]);
 
   const metaText = useMemo(() => {
